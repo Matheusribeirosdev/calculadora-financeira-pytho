@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Financeira & Renda Fixa</title>
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --accent: #38bdf8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 480px;
+            padding: 28px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background-color: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            color: #000;
+            font-weight: 700;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            color: #fff;
+        }
+
+        .results {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px dashed var(--border);
+            display: none;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .result-row .label {
+            color: var(--text-muted);
+        }
+
+        .result-row .value {
+            font-weight: 600;
+        }
+
+        .result-row.highlight {
+            background-color: rgba(16, 185, 129, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            margin-top: 12px;
+        }
+
+        .result-row.highlight .value {
+            color: var(--primary);
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>💰 Calculadora Renda Fixa</h1>
+            <p>Simulador de CDB, LCI e LCA com alíquota de IR</p>
+        </div>
+
+        <div class="form-group">
+            <label for="tipoAtivo">Tipo de Investimento</label>
+            <select id="tipoAtivo">
+                <option value="CDB">CDB (Sujeito a IR Regressivo)</option>
+                <option value="LCI">LCI (Isento de IR)</option>
+                <option value="LCA">LCA (Isento de IR)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="capital">Valor Inicial (R$)</label>
+            <input type="number" id="capital" placeholder="Ex: 1000" value="1000">
+        </div>
+
+        <div class="form-group">
+            <label for="pctCdi">% do CDI Contratado (%)</label>
+            <input type="number" id="pctCdi" placeholder="Ex: 100" value="100">
+        </div>
+
+        <div class="form-group">
+            <label for="taxaCdi">Taxa CDI Atual (% a.a.)</label>
+            <input type="number" id="taxaCdi" step="0.01" placeholder="Ex: 10.5" value="10.5">
+        </div>
+
+        <div class="form-group">
+            <label for="prazoMeses">Prazo (em meses)</label>
+            <input type="number" id="prazoMeses" placeholder="Ex: 12" value="12">
+        </div>
+
+        <button class="btn" onclick="calcular()">Simular Rendimentos</button>
+
+        <div class="results" id="resultsBox">
+            <div class="result-row">
+                <span class="label">Produto:</span>
+                <span class="value" id="resProduto">CDB</span>
+            </div>
+            <div class="result-row">
+                <span class="label">Montante Bruto:</span>
+                <span class="value" id="resBruto">R$ 0,00</span>
+            </div>
+            <div class="result-row">
+                <span class="label">Alíquota IR / Desconto:</span>
+                <span class="value" id="resIR">0% (R$ 0,00)</span>
+            </div>
+            <div class="result-row highlight">
+                <span class="label">Montante Líquido:</span>
+                <span class="value" id="resLiquido">R$ 0,00</span>
+            </div>
+            <div class="result-row">
+                <span class="label">Rendimento Líquido (%):</span>
+                <span class="value" id="resPct">0,00%</span>
+            </div>
+        </div>
+
+        <div class="footer">
+            Desenvolvido por <a href="https://github.com/Matheusribeirosdev" target="_blank">Matheus Ribeiro</a>
+        </div>
+    </div>
+
+    <script>
+        function obterAliquotaIR(dias) {
+            if (dias <= 180) return 0.225;
+            if (dias <= 360) return 0.20;
+            if (dias <= 720) return 0.175;
+            return 0.15;
+        }
+
+        function calcular() {
+            const tipo = document.getElementById('tipoAtivo').value;
+            const capital = parseFloat(document.getElementById('capital').value) || 0;
+            const pctCdi = parseFloat(document.getElementById('pctCdi').value) || 0;
+            const taxaCdi = parseFloat(document.getElementById('taxaCdi').value) || 0;
+            const prazoMeses = parseInt(document.getElementById('prazoMeses').value) || 0;
+
+            const dias = prazoMeses * 30;
+            const anos = prazoMeses / 12;
+            const taxaEfetivaAnual = (pctCdi / 100) * (taxaCdi / 100);
+
+            const montanteBruto = capital * Math.pow(1 + taxaEfetivaAnual, anos);
+            const rendimentoBruto = montanteBruto - capital;
+
+            const isIsento = ['LCI', 'LCA'].includes(tipo);
+            let aliquotaIR = 0;
+            let impostoDevido = 0;
+
+            if (!isIsento) {
+                aliquotaIR = obterAliquotaIR(dias);
+                impostoDevido = rendimentoBruto * aliquotaIR;
+            }
+
+            const montanteLiquido = montanteBruto - impostoDevido;
+            const rendimentoLiquido = montanteLiquido - capital;
+            const rentabilidadePct = capital > 0 ? (rendimentoLiquido / capital) * 100 : 0;
+
+            document.getElementById('resProduto').innerText = tipo;
+            document.getElementById('resBruto').innerText = 'R$ ' + montanteBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('resIR').innerText = isIsento ? 'Isento de IR' : `${(aliquotaIR * 100).toFixed(1)}% (R$ ${impostoDevido.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})})`;
+            document.getElementById('resLiquido').innerText = 'R$ ' + montanteLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('resPct').innerText = rentabilidadePct.toFixed(2) + '%';
+
+            document.getElementById('resultsBox').classList.add('active');
+        }
+    </script>
+</body>
+</html>
